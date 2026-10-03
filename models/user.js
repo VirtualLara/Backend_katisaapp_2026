@@ -1,8 +1,30 @@
 const db = require ('../config/config');
+const bcrypt = require ('bcryptjs');
 
 const User = {};
 
-User.create = (user, result) => {
+User.FindById = (id, result) => {
+    const sql = `SELECT id, name, lastname, email, phone, ocupation, postalCode, interests, notifications, image, password FROM users WHERE id = ?`;
+    db.query(
+        sql,
+        [ id ],
+        (err, user) => {
+            if (err) {
+                console.log('Error: ', err);
+                result(err, null)
+            }
+            else {
+                console.log('Usuario: ', user);
+                result(null, user);
+            }
+        }
+    )
+};
+
+User.create = async (user, result) => {
+
+    const hash = await bcrypt.hash(user.password, 10);
+
     const sql = `INSERT INTO users(
                                 name, 
                                 lastname, 
@@ -30,7 +52,7 @@ User.create = (user, result) => {
             user.interests,  
             user.notifications,  
             user.image, 
-            user.password, 
+            hash, 
             new Date(),
             new Date()
         ],
